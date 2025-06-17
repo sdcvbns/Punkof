@@ -1,49 +1,209 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>أسعار الشاشات والبطاريات</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #eef3f8;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #2f4f4f;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background: #f1f5f9;
+    }
+    .actions button {
+      margin: 0 5px;
+      padding: 5px 10px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>إضافة سعر جديد</h1>
-    <div class="form-section">
-      <select id="company">
-        <option disabled selected>اختر الشركة</option>
-        <option>سامسونج</option>
-        <option>هواوي</option>
-        <option>أوبو</option>
-        <option>شاومي</option>
-        <option>تكنو</option>
-        <option>إنفنكس</option>
-        <option>ريلمي</option>
-        <option>آبل</option>
-        <option>نوكيا</option>
-      </select>
-      <select id="part">
-        <option disabled selected>نوع القطعة</option>
-        <option>شاشة</option>
-        <option>بطارية</option>
-      </select>
-      <input type="text" id="model" placeholder="نوع الجهاز">
-      <input type="number" id="price" placeholder="السعر (IQD)">
-      <button onclick="addEntry()">إضافة</button>
-    </div>
+    <h2>إدخال سعر جديد</h2>
+    <label>الشركة</label>
+    <select id="company">
+      <option>سامسونج</option>
+      <option>هواوي</option>
+      <option>شاومي</option>
+      <option>أوبو</option>
+      <option>ريلمي</option>
+      <option>هونر</option>
+      <option>تكنو</option>
+      <option>انفنيكس</option>
+      <option>آيتل</option>
+    </select>
 
-    <h2>عرض الأسعار</h2>
-    <div class="filter">
-      <select id="filterPart" onchange="filterEntries()">
-        <option value="all">الكل</option>
-        <option value="شاشة">شاشات</option>
-        <option value="بطارية">بطاريات</option>
-      </select>
-      <input type="text" id="searchInput" placeholder="بحث باسم الجهاز..." oninput="filterEntries()">
-    </div>
-    <div id="entriesList" class="entries-list"></div>
+    <label>نوع القطعة</label>
+    <select id="partType">
+      <option>شاشة</option>
+      <option>بطارية</option>
+    </select>
+
+    <label>نوع الجهاز</label>
+    <input type="text" id="deviceType" placeholder="مثال: A12, Note 10 ...">
+
+    <label>السعر (بالدينار)</label>
+    <input type="number" id="price">
+
+    <button onclick="addOrUpdate()">حفظ</button>
+
+    <h2>الأسعار</h2>
+
+    <label>بحث حسب القطعة</label>
+    <select id="filterPart" onchange="filterTable()">
+      <option value="">الكل</option>
+      <option value="شاشة">شاشة</option>
+      <option value="بطارية">بطارية</option>
+    </select>
+
+    <label>بحث حسب اسم الجهاز</label>
+    <input type="text" id="searchBox" onkeyup="filterTable()" placeholder="اكتب اسم الجهاز">
+
+    <table>
+      <thead>
+        <tr>
+          <th>الشركة</th>
+          <th>القطعة</th>
+          <th>نوع الجهاز</th>
+          <th>السعر</th>
+          <th>إجراء</th>
+        </tr>
+      </thead>
+      <tbody id="priceTable"></tbody>
+    </table>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    let editIndex = -1;
+    let data = [];
+
+    function addOrUpdate() {
+      const company = document.getElementById('company').value;
+      const part = document.getElementById('partType').value;
+      const device = document.getElementById('deviceType').value;
+      const price = document.getElementById('price').value;
+
+      if (!device || !price) return alert("يرجى إدخال جميع الحقول");
+
+      const entry = { company, part, device, price };
+
+      if (editIndex === -1) {
+        data.push(entry);
+      } else {
+        data[editIndex] = entry;
+        editIndex = -1;
+      }
+
+      document.getElementById('deviceType').value = '';
+      document.getElementById('price').value = '';
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('priceTable');
+      tbody.innerHTML = '';
+      data.forEach((item, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.company}</td>
+          <td>${item.part}</td>
+          <td>${item.device}</td>
+          <td>${item.price}</td>
+          <td class="actions">
+            <button onclick="editEntry(${i})">تعديل</button>
+            <button onclick="deleteEntry(${i})">حذف</button>
+          </td>`;
+        tbody.appendChild(row);
+      });
+    }
+
+    function editEntry(index) {
+      const item = data[index];
+      document.getElementById('company').value = item.company;
+      document.getElementById('partType').value = item.part;
+      document.getElementById('deviceType').value = item.device;
+      document.getElementById('price').value = item.price;
+      editIndex = index;
+    }
+
+    function deleteEntry(index) {
+      if (confirm("هل تريد حذف هذا العنصر؟")) {
+        data.splice(index, 1);
+        renderTable();
+      }
+    }
+
+    function filterTable() {
+      const filterPart = document.getElementById('filterPart').value;
+      const search = document.getElementById('searchBox').value.toLowerCase();
+      const tbody = document.getElementById('priceTable');
+      tbody.innerHTML = '';
+      data
+        .filter(item => 
+          (filterPart === '' || item.part === filterPart) &&
+          (item.device.toLowerCase().includes(search))
+        )
+        .forEach((item, i) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${item.company}</td>
+            <td>${item.part}</td>
+            <td>${item.device}</td>
+            <td>${item.price}</td>
+            <td class="actions">
+              <button onclick="editEntry(${i})">تعديل</button>
+              <button onclick="deleteEntry(${i})">حذف</button>
+            </td>`;
+          tbody.appendChild(row);
+        });
+    }
+  </script>
 </body>
 </html>
