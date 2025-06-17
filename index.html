@@ -112,18 +112,32 @@
     .hidden {
       display: none;
     }
+
+    /* النقطة الخضراء */
+    #adminToggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 20px;
+      height: 20px;
+      background-color: green;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
   <header>مكتب المهندس | إدارة أسعار الشاشات والبطاريات</header>
 
+  <div id="adminToggle" onclick="requestAccess()" title="واجهة الإدارة"></div>
+
   <div class="nav">
-    <button onclick="showSection('admin')">واجهة الإدخال</button>
     <button onclick="showSection('viewer')">واجهة الزبون</button>
   </div>
 
   <!-- واجهة الإدخال -->
-  <div id="admin" class="container">
+  <div id="admin" class="container hidden">
     <h2>إضافة أو تعديل سعر</h2>
     <label>الشركة</label>
     <select id="company">
@@ -151,10 +165,23 @@
     <input type="number" id="price">
 
     <button class="save-btn" onclick="addOrUpdate()">حفظ</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>الشركة</th>
+          <th>القطعة</th>
+          <th>الجهاز</th>
+          <th>السعر</th>
+          <th>إجراء</th>
+        </tr>
+      </thead>
+      <tbody id="adminTable"></tbody>
+    </table>
   </div>
 
   <!-- واجهة الزبون -->
-  <div id="viewer" class="container hidden">
+  <div id="viewer" class="container">
     <h2>قائمة الأسعار</h2>
     <label>تصفية حسب نوع القطعة</label>
     <select id="filterPart" onchange="filterTable()">
@@ -173,7 +200,6 @@
           <th>القطعة</th>
           <th>الجهاز</th>
           <th>السعر</th>
-          <th>إجراء</th>
         </tr>
       </thead>
       <tbody id="priceTable"></tbody>
@@ -208,12 +234,21 @@
     }
 
     function renderTable() {
-      const tbody = document.getElementById('priceTable');
-      if (!tbody) return;
-      tbody.innerHTML = '';
+      const viewerTable = document.getElementById('priceTable');
+      const adminTable = document.getElementById('adminTable');
+      if (viewerTable) viewerTable.innerHTML = '';
+      if (adminTable) adminTable.innerHTML = '';
+
       data.forEach((item, i) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+        const row = `<tr>
+          <td>${item.company}</td>
+          <td>${item.part}</td>
+          <td>${item.device}</td>
+          <td>${item.price}</td>
+        </tr>`;
+        if (viewerTable) viewerTable.innerHTML += row;
+
+        const adminRow = `<tr>
           <td>${item.company}</td>
           <td>${item.part}</td>
           <td>${item.device}</td>
@@ -221,8 +256,9 @@
           <td class="actions">
             <button onclick="editEntry(${i})">تعديل</button>
             <button onclick="deleteEntry(${i})">حذف</button>
-          </td>`;
-        tbody.appendChild(row);
+          </td>
+        </tr>`;
+        if (adminTable) adminTable.innerHTML += adminRow;
       });
     }
 
@@ -233,7 +269,6 @@
       document.getElementById('deviceType').value = item.device;
       document.getElementById('price').value = item.price;
       editIndex = index;
-      showSection('admin');
     }
 
     function deleteEntry(index) {
@@ -254,18 +289,14 @@
           (filterPart === '' || item.part === filterPart) &&
           (item.device.toLowerCase().includes(search))
         )
-        .forEach((item, i) => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
+        .forEach((item) => {
+          const row = `<tr>
             <td>${item.company}</td>
             <td>${item.part}</td>
             <td>${item.device}</td>
             <td>${item.price}</td>
-            <td class="actions">
-              <button onclick="editEntry(${i})">تعديل</button>
-              <button onclick="deleteEntry(${i})">حذف</button>
-            </td>`;
-          tbody.appendChild(row);
+          </tr>`;
+          tbody.innerHTML += row;
         });
     }
 
@@ -273,11 +304,20 @@
       document.getElementById('admin').classList.add('hidden');
       document.getElementById('viewer').classList.add('hidden');
       document.getElementById(section).classList.remove('hidden');
-      if (section === 'viewer') renderTable();
+      renderTable();
+    }
+
+    function requestAccess() {
+      const pass = prompt("أدخل رمز الدخول:");
+      if (pass === "13571357") {
+        showSection('admin');
+      } else {
+        alert("رمز غير صحيح");
+      }
     }
 
     window.onload = () => {
-      renderTable();
+      showSection('viewer');
     };
   </script>
 </body>
