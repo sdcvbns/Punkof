@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أسعار الشاشات والبطاريات</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>إضافة سعر جديد</h1>
+    <div class="form-section">
+      <select id="company">
+        <option disabled selected>اختر الشركة</option>
+        <option>سامسونج</option>
+        <option>هواوي</option>
+        <option>أوبو</option>
+        <option>شاومي</option>
+        <option>تكنو</option>
+        <option>إنفنكس</option>
+        <option>ريلمي</option>
+        <option>آبل</option>
+        <option>نوكيا</option>
+      </select>
+      <select id="part">
+        <option disabled selected>نوع القطعة</option>
+        <option>شاشة</option>
+        <option>بطارية</option>
+      </select>
+      <input type="text" id="model" placeholder="نوع الجهاز">
+      <input type="number" id="price" placeholder="السعر (IQD)">
+      <button onclick="addEntry()">إضافة</button>
+    </div>
+
+    <h2>عرض الأسعار</h2>
+    <div class="filter">
+      <select id="filterPart" onchange="filterEntries()">
+        <option value="all">الكل</option>
+        <option value="شاشة">شاشات</option>
+        <option value="بطارية">بطاريات</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="بحث باسم الجهاز..." oninput="filterEntries()">
+    </div>
+    <div id="entriesList" class="entries-list"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
