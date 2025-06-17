@@ -24,6 +24,16 @@
       font-weight: bold;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+    .dot {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 20px;
+      height: 20px;
+      background-color: #10b981;
+      border-radius: 50%;
+      cursor: pointer;
+    }
     .container {
       max-width: 900px;
       background: white;
@@ -49,6 +59,16 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
+    button.save-btn {
+      margin-top: 20px;
+      padding: 10px 25px;
+      background: #1e40af;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -63,6 +83,21 @@
       background: #f3f4f6;
       color: #1e3a8a;
     }
+    .actions button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .actions button:first-child {
+      background: #10b981;
+      color: white;
+    }
+    .actions button:last-child {
+      background: #ef4444;
+      color: white;
+    }
     .hidden {
       display: none;
     }
@@ -70,10 +105,56 @@
 </head>
 <body>
   <header>مكتب المهندس | إدارة أسعار الشاشات والبطاريات</header>
+  <div class="dot" onclick="showLogin()"></div>
 
+  <!-- واجهة الإدخال -->
+  <div id="admin" class="container hidden">
+    <h2>إضافة أو تعديل سعر</h2>
+    <label>الشركة</label>
+    <select id="company">
+      <option>سامسونج</option>
+      <option>هواوي</option>
+      <option>شاومي</option>
+      <option>أوبو</option>
+      <option>ريلمي</option>
+      <option>هونر</option>
+      <option>تكنو</option>
+      <option>انفنيكس</option>
+      <option>آيتل</option>
+    </select>
+
+    <label>نوع القطعة</label>
+    <select id="partType">
+      <option>شاشة</option>
+      <option>بطارية</option>
+    </select>
+
+    <label>نوع الجهاز</label>
+    <input type="text" id="deviceType" placeholder="مثال: A12, Note 10 ...">
+
+    <label>السعر (بالدينار)</label>
+    <input type="number" id="price">
+
+    <button class="save-btn" onclick="addOrUpdate()">حفظ</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>الشركة</th>
+          <th>القطعة</th>
+          <th>الجهاز</th>
+          <th>السعر</th>
+          <th>إجراء</th>
+        </tr>
+      </thead>
+      <tbody id="priceTableAdmin"></tbody>
+    </table>
+  </div>
+
+  <!-- واجهة الزبون -->
   <div id="viewer" class="container">
     <h2>قائمة الأسعار</h2>
-    
+
     <label>اختر الشركة</label>
     <select id="filterCompany" onchange="onCompanySelected()">
       <option value="">-- اختر الشركة --</option>
@@ -107,7 +188,76 @@
   </div>
 
   <script>
+    let editIndex = -1;
     let data = JSON.parse(localStorage.getItem('priceData')) || [];
+
+    function showLogin() {
+      const pass = prompt("ادخل رمز الدخول:");
+      if (pass === "13571357") {
+        document.getElementById('admin').classList.remove('hidden');
+        renderTableAdmin();
+      }
+    }
+
+    function addOrUpdate() {
+      const company = document.getElementById('company').value;
+      const part = document.getElementById('partType').value;
+      const device = document.getElementById('deviceType').value;
+      const price = document.getElementById('price').value;
+
+      if (!device || !price) return alert("يرجى إدخال جميع الحقول");
+
+      const entry = { company, part, device, price };
+
+      if (editIndex === -1) {
+        data.push(entry);
+      } else {
+        data[editIndex] = entry;
+        editIndex = -1;
+      }
+
+      localStorage.setItem('priceData', JSON.stringify(data));
+      document.getElementById('deviceType').value = '';
+      document.getElementById('price').value = '';
+      renderTableAdmin();
+    }
+
+    function renderTableAdmin() {
+      const tbody = document.getElementById('priceTableAdmin');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      data.forEach((item, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.company}</td>
+          <td>${item.part}</td>
+          <td>${item.device}</td>
+          <td>${item.price}</td>
+          <td class="actions">
+            <button onclick="editEntry(${i})">تعديل</button>
+            <button onclick="deleteEntry(${i})">حذف</button>
+          </td>`;
+        tbody.appendChild(row);
+      });
+    }
+
+    function editEntry(index) {
+      const item = data[index];
+      document.getElementById('company').value = item.company;
+      document.getElementById('partType').value = item.part;
+      document.getElementById('deviceType').value = item.device;
+      document.getElementById('price').value = item.price;
+      editIndex = index;
+      document.getElementById('admin').scrollIntoView();
+    }
+
+    function deleteEntry(index) {
+      if (confirm("هل تريد حذف هذا العنصر؟")) {
+        data.splice(index, 1);
+        localStorage.setItem('priceData', JSON.stringify(data));
+        renderTableAdmin();
+      }
+    }
 
     function onCompanySelected() {
       document.getElementById('searchBox').value = '';
