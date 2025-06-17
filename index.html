@@ -3,47 +3,83 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>أسعار الشاشات والبطاريات</title>
+  <title>مكتب المهندس | أسعار الشاشات والبطاريات</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       font-family: 'Cairo', sans-serif;
-      background: #eef3f8;
+    }
+    body {
       margin: 0;
+      background: linear-gradient(to right, #f0f4f8, #dbeafe);
+      color: #333;
+    }
+    header {
+      background: #1e40af;
+      color: white;
       padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      background: #3b82f6;
+      padding: 10px;
+    }
+    .nav button {
+      background: white;
+      border: none;
+      color: #1e40af;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .nav button:hover {
+      background: #1e3a8a;
+      color: white;
     }
     .container {
-      max-width: 800px;
-      margin: auto;
+      max-width: 900px;
       background: white;
+      margin: 30px auto;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
     h2 {
       text-align: center;
-      color: #2f4f4f;
+      margin-bottom: 20px;
+      color: #1e40af;
     }
     label {
       display: block;
       margin-top: 15px;
+      font-weight: 600;
     }
     select, input[type="number"], input[type="text"] {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
-    button {
+    button.save-btn {
       margin-top: 20px;
-      padding: 10px 20px;
-      background: #3b82f6;
+      padding: 10px 25px;
+      background: #1e40af;
       border: none;
       color: white;
+      font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
-    }
-    button:hover {
-      background: #2563eb;
     }
     table {
       width: 100%;
@@ -51,22 +87,45 @@
       margin-top: 30px;
     }
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       padding: 12px;
       text-align: center;
     }
     th {
-      background: #f1f5f9;
+      background: #f3f4f6;
+      color: #1e3a8a;
     }
     .actions button {
       margin: 0 5px;
       padding: 5px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .actions button:first-child {
+      background: #10b981;
+      color: white;
+    }
+    .actions button:last-child {
+      background: #ef4444;
+      color: white;
+    }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>إدخال سعر جديد</h2>
+  <header>مكتب المهندس | إدارة أسعار الشاشات والبطاريات</header>
+
+  <div class="nav">
+    <button onclick="showSection('admin')">واجهة الإدخال</button>
+    <button onclick="showSection('viewer')">واجهة الزبون</button>
+  </div>
+
+  <!-- واجهة الإدخال -->
+  <div id="admin" class="container">
+    <h2>إضافة أو تعديل سعر</h2>
     <label>الشركة</label>
     <select id="company">
       <option>سامسونج</option>
@@ -92,26 +151,28 @@
     <label>السعر (بالدينار)</label>
     <input type="number" id="price">
 
-    <button onclick="addOrUpdate()">حفظ</button>
+    <button class="save-btn" onclick="addOrUpdate()">حفظ</button>
+  </div>
 
-    <h2>الأسعار</h2>
-
-    <label>بحث حسب القطعة</label>
+  <!-- واجهة الزبون -->
+  <div id="viewer" class="container hidden">
+    <h2>قائمة الأسعار</h2>
+    <label>تصفية حسب نوع القطعة</label>
     <select id="filterPart" onchange="filterTable()">
       <option value="">الكل</option>
       <option value="شاشة">شاشة</option>
       <option value="بطارية">بطارية</option>
     </select>
 
-    <label>بحث حسب اسم الجهاز</label>
-    <input type="text" id="searchBox" onkeyup="filterTable()" placeholder="اكتب اسم الجهاز">
+    <label>بحث باسم الجهاز</label>
+    <input type="text" id="searchBox" onkeyup="filterTable()" placeholder="اكتب اسم الجهاز...">
 
     <table>
       <thead>
         <tr>
           <th>الشركة</th>
           <th>القطعة</th>
-          <th>نوع الجهاز</th>
+          <th>الجهاز</th>
           <th>السعر</th>
           <th>إجراء</th>
         </tr>
@@ -122,7 +183,7 @@
 
   <script>
     let editIndex = -1;
-    let data = [];
+    let data = JSON.parse(localStorage.getItem('priceData')) || [];
 
     function addOrUpdate() {
       const company = document.getElementById('company').value;
@@ -141,6 +202,7 @@
         editIndex = -1;
       }
 
+      localStorage.setItem('priceData', JSON.stringify(data));
       document.getElementById('deviceType').value = '';
       document.getElementById('price').value = '';
       renderTable();
@@ -148,6 +210,7 @@
 
     function renderTable() {
       const tbody = document.getElementById('priceTable');
+      if (!tbody) return;
       tbody.innerHTML = '';
       data.forEach((item, i) => {
         const row = document.createElement('tr');
@@ -171,11 +234,13 @@
       document.getElementById('deviceType').value = item.device;
       document.getElementById('price').value = item.price;
       editIndex = index;
+      showSection('admin');
     }
 
     function deleteEntry(index) {
       if (confirm("هل تريد حذف هذا العنصر؟")) {
         data.splice(index, 1);
+        localStorage.setItem('priceData', JSON.stringify(data));
         renderTable();
       }
     }
@@ -186,7 +251,7 @@
       const tbody = document.getElementById('priceTable');
       tbody.innerHTML = '';
       data
-        .filter(item => 
+        .filter(item =>
           (filterPart === '' || item.part === filterPart) &&
           (item.device.toLowerCase().includes(search))
         )
@@ -204,6 +269,17 @@
           tbody.appendChild(row);
         });
     }
+
+    function showSection(section) {
+      document.getElementById('admin').classList.add('hidden');
+      document.getElementById('viewer').classList.add('hidden');
+      document.getElementById(section).classList.remove('hidden');
+      if (section === 'viewer') renderTable();
+    }
+
+    window.onload = () => {
+      renderTable();
+    };
   </script>
 </body>
 </html>
