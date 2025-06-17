@@ -24,6 +24,17 @@
       font-weight: bold;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+    .admin-dot {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      width: 20px;
+      height: 20px;
+      background: #10b981;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 999;
+    }
     .container {
       max-width: 900px;
       background: white;
@@ -91,61 +102,19 @@
     .hidden {
       display: none;
     }
-    .dot {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      width: 20px;
-      height: 20px;
-      background-color: #10b981;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 9999;
-    }
   </style>
 </head>
 <body>
   <header>مكتب المهندس | إدارة أسعار الشاشات والبطاريات</header>
 
-  <!-- زر سري لعرض واجهة الأدمن -->
-  <div class="dot" onclick="showLogin()"></div>
+  <!-- نقطة خضراء -->
+  <div class="admin-dot" onclick="requestAdminCode()"></div>
 
-  <!-- واجهة الزبون -->
-  <div id="viewer" class="container">
-    <h2>قائمة الأسعار</h2>
-    <label>اختيار الشركة</label>
-    <select id="filterCompany" onchange="filterTable()">
-      <option value="">اختر الشركة</option>
-      <option>سامسونج</option>
-      <option>هواوي</option>
-      <option>شاومي</option>
-      <option>أوبو</option>
-      <option>ريلمي</option>
-      <option>هونر</option>
-      <option>تكنو</option>
-      <option>انفنيكس</option>
-      <option>آيتل</option>
-    </select>
-
-    <label>بحث باسم الجهاز</label>
-    <input type="text" id="searchBox" onkeyup="filterTable()" placeholder="اكتب اسم الجهاز...">
-
-    <table id="viewerTable">
-      <thead>
-        <tr>
-          <th>الشركة</th>
-          <th>القطعة</th>
-          <th>الجهاز</th>
-          <th>السعر</th>
-        </tr>
-      </thead>
-      <tbody id="viewerTableBody"></tbody>
-    </table>
-  </div>
-
-  <!-- واجهة الإدخال (الأدمن) -->
+  <!-- واجهة الإدخال (أدمن) -->
   <div id="admin" class="container hidden">
     <h2>إضافة أو تعديل سعر</h2>
+    <button onclick="showSection('viewer')" style="margin-bottom: 15px; padding: 8px 20px; background:#64748b; color:white; border:none; border-radius:8px; cursor:pointer;">رجوع إلى وضع الزبون</button>
+
     <label>الشركة</label>
     <select id="company">
       <option>سامسونج</option>
@@ -172,6 +141,28 @@
     <input type="number" id="price">
 
     <button class="save-btn" onclick="addOrUpdate()">حفظ</button>
+  </div>
+
+  <!-- واجهة الزبون -->
+  <div id="viewer" class="container">
+    <h2>البحث عن السعر</h2>
+
+    <label>اختيار الشركة</label>
+    <select id="searchCompany" onchange="filterDevices()">
+      <option value="">اختر شركة</option>
+      <option>سامسونج</option>
+      <option>هواوي</option>
+      <option>شاومي</option>
+      <option>أوبو</option>
+      <option>ريلمي</option>
+      <option>هونر</option>
+      <option>تكنو</option>
+      <option>انفنيكس</option>
+      <option>آيتل</option>
+    </select>
+
+    <label>بحث باسم الجهاز</label>
+    <input type="text" id="searchBox" onkeyup="filterDevices()" placeholder="اكتب اسم الجهاز...">
 
     <table>
       <thead>
@@ -180,7 +171,6 @@
           <th>القطعة</th>
           <th>الجهاز</th>
           <th>السعر</th>
-          <th>إجراء</th>
         </tr>
       </thead>
       <tbody id="priceTable"></tbody>
@@ -190,6 +180,15 @@
   <script>
     let editIndex = -1;
     let data = JSON.parse(localStorage.getItem('priceData')) || [];
+
+    function requestAdminCode() {
+      const code = prompt("ادخل رمز الدخول:");
+      if (code === "13571357") {
+        showSection('admin');
+      } else {
+        alert("رمز خاطئ!");
+      }
+    }
 
     function addOrUpdate() {
       const company = document.getElementById('company').value;
@@ -211,68 +210,21 @@
       localStorage.setItem('priceData', JSON.stringify(data));
       document.getElementById('deviceType').value = '';
       document.getElementById('price').value = '';
-      renderAdminTable();
-      renderViewerTable();
+      renderTable();
     }
 
-    function renderAdminTable() {
+    function renderTable(adminMode = false) {
       const tbody = document.getElementById('priceTable');
-      if (!tbody) return;
       tbody.innerHTML = '';
-      data.forEach((item, i) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${item.company}</td>
-          <td>${item.part}</td>
-          <td>${item.device}</td>
-          <td>${item.price}</td>
-          <td class="actions">
-            <button onclick="editEntry(${i})">تعديل</button>
-            <button onclick="deleteEntry(${i})">حذف</button>
-          </td>`;
-        tbody.appendChild(row);
-      });
-    }
-
-    function renderViewerTable() {
-      const tbody = document.getElementById('viewerTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-    }
-
-    function editEntry(index) {
-      const item = data[index];
-      document.getElementById('company').value = item.company;
-      document.getElementById('partType').value = item.part;
-      document.getElementById('deviceType').value = item.device;
-      document.getElementById('price').value = item.price;
-      editIndex = index;
-      showSection('admin');
-    }
-
-    function deleteEntry(index) {
-      if (confirm("هل تريد حذف هذا العنصر؟")) {
-        data.splice(index, 1);
-        localStorage.setItem('priceData', JSON.stringify(data));
-        renderAdminTable();
-        renderViewerTable();
-      }
-    }
-
-    function filterTable() {
-      const filterCompany = document.getElementById('filterCompany').value;
+      const filterCompany = document.getElementById('searchCompany').value;
       const search = document.getElementById('searchBox').value.toLowerCase();
-      const tbody = document.getElementById('viewerTableBody');
-      tbody.innerHTML = '';
-
-      if (!filterCompany || !search) return;
 
       data
         .filter(item =>
-          item.company === filterCompany &&
-          item.device.toLowerCase().includes(search)
+          (!filterCompany || item.company === filterCompany) &&
+          (search === '' || item.device.toLowerCase().includes(search))
         )
-        .forEach(item => {
+        .forEach((item, i) => {
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${item.company}</td>
@@ -283,25 +235,20 @@
         });
     }
 
-    function showLogin() {
-      const pass = prompt("ادخل رمز الدخول:");
-      if (pass === "13571357") {
-        showSection('admin');
-        renderAdminTable();
-      } else {
-        alert("رمز خاطئ");
-      }
-    }
-
     function showSection(section) {
       document.getElementById('admin').classList.add('hidden');
       document.getElementById('viewer').classList.add('hidden');
       document.getElementById(section).classList.remove('hidden');
+      if (section === 'viewer') renderTable();
+    }
+
+    function filterDevices() {
+      renderTable();
     }
 
     window.onload = () => {
-      renderAdminTable();
-      renderViewerTable();
+      showSection('viewer');
+      renderTable();
     };
   </script>
 </body>
