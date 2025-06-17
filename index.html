@@ -84,36 +84,33 @@
       background: #f3f4f6;
       color: #1e3a8a;
     }
-    .actions button {
-      margin: 0 5px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .actions button:first-child {
-      background: #10b981;
-      color: white;
-    }
-    .actions button:last-child {
-      background: #ef4444;
-      color: white;
-    }
     .hidden {
       display: none;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      background-color: #64748b;
+      color: white;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <header>مكتب المهندس | إدارة أسعار الشاشات والبطاريات</header>
 
-  <!-- نقطة خضراء -->
+  <!-- النقطة الخضراء -->
   <div class="admin-dot" onclick="requestAdminCode()"></div>
 
-  <!-- واجهة الإدخال (أدمن) -->
+  <!-- واجهة الأدمن -->
   <div id="admin" class="container hidden">
     <h2>إضافة أو تعديل سعر</h2>
-    <button onclick="showSection('viewer')" style="margin-bottom: 15px; padding: 8px 20px; background:#64748b; color:white; border:none; border-radius:8px; cursor:pointer;">رجوع إلى وضع الزبون</button>
+
+    <!-- زر الرجوع -->
+    <button class="back-btn" onclick="showSection('viewer')">رجوع إلى وضع الزبون</button>
 
     <label>الشركة</label>
     <select id="company">
@@ -213,7 +210,7 @@
       renderTable();
     }
 
-    function renderTable(adminMode = false) {
+    function renderTable() {
       const tbody = document.getElementById('priceTable');
       tbody.innerHTML = '';
       const filterCompany = document.getElementById('searchCompany').value;
@@ -248,7 +245,6 @@
 
     window.onload = () => {
       showSection('viewer');
-      renderTable();
     };
   </script>
 </body>
