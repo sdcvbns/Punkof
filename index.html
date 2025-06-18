@@ -5,6 +5,7 @@
   <title>مكتب العالمي | أسعار الشاشات والبطاريات</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* ... نفس التنسيقات السابقة مع تعديل طفيف لزر الإجراءات */
     * {
       box-sizing: border-box;
       font-family: 'Cairo', sans-serif;
@@ -100,6 +101,15 @@
     .hidden {
       display: none;
     }
+    .action-btn {
+      margin: 0 5px;
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .edit-btn { background: #facc15; }
+    .delete-btn { background: #ef4444; color: white; }
   </style>
 </head>
 <body>
@@ -135,6 +145,19 @@
   <input type="number" id="price">
 
   <button class="save-btn" onclick="addToSheet()">حفظ</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>الشركة</th>
+        <th>القطعة</th>
+        <th>الجهاز</th>
+        <th>السعر</th>
+        <th>إجراءات</th>
+      </tr>
+    </thead>
+    <tbody id="adminTable"></tbody>
+  </table>
 </div>
 
 <!-- واجهة الزبون -->
@@ -163,14 +186,16 @@
 </div>
 
 <script>
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbz-I0ufgyMg97_P_UDOQS5dJU-9OTA142De16u7vQilsVlNUeDZqTb42A5P0AhHAA1qHQ/exec';
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbz2mLszvcw2wGjRumJAej6O_96cx6z-DllsHwF6EHZ2zt31Bm1R_1Te79kQyRxTNPNYOw/exec';
   let allData = [];
+  let editRow = null;
 
   function fetchData() {
     fetch(scriptURL)
       .then(res => res.json())
       .then(rows => {
-        allData = rows.slice(1).map(row => ({
+        allData = rows.slice(1).map((row, i) => ({
+          row: i + 2, // رقم الصف في الشيت
           company: row[0],
           part: row[1],
           device: row[2],
@@ -178,6 +203,7 @@
         }));
         fillCompanyFilter();
         renderTable();
+        renderAdminTable();
       });
   }
 
@@ -211,8 +237,23 @@
       });
   }
 
-  function filterTable() {
-    renderTable();
+  function renderAdminTable() {
+    const table = document.getElementById('adminTable');
+    table.innerHTML = '';
+    allData.forEach(item => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item.company}</td>
+        <td>${item.part}</td>
+        <td>${item.device}</td>
+        <td>${item.price}</td>
+        <td>
+          <button class="action-btn edit-btn" onclick='editEntry(${JSON.stringify(item)})'>تعديل</button>
+          <button class="action-btn delete-btn" onclick='deleteEntry(${item.row})'>حذف</button>
+        </td>
+      `;
+      table.appendChild(row);
+    });
   }
 
   function addToSheet() {
@@ -229,17 +270,46 @@
     formData.append('device', device);
     formData.append('price', price);
 
-    fetch(scriptURL, {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => res.text())
-    .then(msg => {
-      alert(msg);
-      document.getElementById('deviceType').value = '';
-      document.getElementById('price').value = '';
-      fetchData();
-    });
+    if (editRow) {
+      formData.append('action', 'update');
+      formData.append('row', editRow);
+    }
+
+    fetch(scriptURL, { method: 'POST', body: formData })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        document.getElementById('deviceType').value = '';
+        document.getElementById('price').value = '';
+        editRow = null;
+        fetchData();
+      });
+  }
+
+  function editEntry(item) {
+    document.getElementById('company').value = item.company;
+    document.getElementById('partType').value = item.part;
+    document.getElementById('deviceType').value = item.device;
+    document.getElementById('price').value = item.price;
+    editRow = item.row;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function deleteEntry(row) {
+    if (!confirm("هل أنت متأكد من الحذف؟")) return;
+    const formData = new FormData();
+    formData.append('action', 'delete');
+    formData.append('row', row);
+    fetch(scriptURL, { method: 'POST', body: formData })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        fetchData();
+      });
+  }
+
+  function filterTable() {
+    renderTable();
   }
 
   function showSection(id) {
