@@ -5,7 +5,6 @@
   <title>مكتب العالمي | أسعار الشاشات والبطاريات</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* ... نفس التنسيقات السابقة مع تعديل طفيف لزر الإجراءات */
     * {
       box-sizing: border-box;
       font-family: 'Cairo', sans-serif;
@@ -195,7 +194,7 @@
       .then(res => res.json())
       .then(rows => {
         allData = rows.slice(1).map((row, i) => ({
-          row: i + 2, // رقم الصف في الشيت
+          row: i + 2,
           company: row[0],
           part: row[1],
           device: row[2],
@@ -209,9 +208,11 @@
 
   function fillCompanyFilter() {
     const select = document.getElementById("filterCompany");
+    const current = select.value; // حفظ القيمة الحالية
     const companies = [...new Set(allData.map(item => item.company))];
     select.innerHTML = `<option value="">الكل</option>` + 
       companies.map(c => `<option value="${c}">${c}</option>`).join('');
+    select.value = current; // إعادة التحديد بعد التحديث
   }
 
   function renderTable() {
