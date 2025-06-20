@@ -135,6 +135,7 @@
   <select id="partType">
     <option>شاشة</option>
     <option>بطارية</option>
+    <option>قطع غيار</option>
   </select>
 
   <label>نوع الجهاز</label>
@@ -164,9 +165,19 @@
   <h2>قائمة الأسعار</h2>
 
   <label>اختر الشركة</label>
-  <select id="filterCompany" onchange="filterTable()">
+  <select id="filterCompany" onchange="updatePartFilter()">
     <option value="">الكل</option>
   </select>
+
+  <div id="partFilterContainer" class="hidden">
+    <label>اختر نوع القطعة</label>
+    <select id="filterPart" onchange="filterTable()">
+      <option value="">الكل</option>
+      <option value="شاشة">شاشة</option>
+      <option value="بطارية">بطارية</option>
+      <option value="قطع غيار">قطع غيار</option>
+    </select>
+  </div>
 
   <label>بحث باسم الجهاز</label>
   <input type="text" id="searchBox" onkeyup="filterTable()" placeholder="اكتب اسم الجهاز...">
@@ -208,22 +219,24 @@
 
   function fillCompanyFilter() {
     const select = document.getElementById("filterCompany");
-    const current = select.value; // حفظ القيمة الحالية
+    const current = select.value;
     const companies = [...new Set(allData.map(item => item.company))];
     select.innerHTML = `<option value="">الكل</option>` + 
       companies.map(c => `<option value="${c}">${c}</option>`).join('');
-    select.value = current; // إعادة التحديد بعد التحديث
+    select.value = current;
   }
 
   function renderTable() {
     const table = document.getElementById('priceTable');
     table.innerHTML = '';
     const filterCompany = document.getElementById("filterCompany").value;
+    const filterPart = document.getElementById("filterPart")?.value || "";
     const search = document.getElementById("searchBox").value.toLowerCase();
 
     allData
       .filter(item =>
         (filterCompany === '' || item.company === filterCompany) &&
+        (filterPart === '' || item.part === filterPart) &&
         (item.device.toLowerCase().includes(search))
       )
       .forEach(item => {
@@ -310,6 +323,18 @@
   }
 
   function filterTable() {
+    renderTable();
+  }
+
+  function updatePartFilter() {
+    const company = document.getElementById("filterCompany").value;
+    const partFilter = document.getElementById("partFilterContainer");
+    if (company) {
+      partFilter.classList.remove("hidden");
+    } else {
+      partFilter.classList.add("hidden");
+      document.getElementById("filterPart").value = "";
+    }
     renderTable();
   }
 
