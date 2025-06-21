@@ -356,6 +356,19 @@
 
   setInterval(fetchData, 10000);
   window.onload = fetchData;
+
+  // كود منع النسخ وتحديد النص والنقر بزر الفأرة الأيمن
+  document.addEventListener('contextmenu', event => event.preventDefault());
+  document.addEventListener('selectstart', event => event.preventDefault());
+  document.addEventListener('copy', event => event.preventDefault());
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey && e.key === 'u') || 
+        (e.ctrlKey && e.key === 'c') || 
+        (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+        (e.key === 'F12')) {
+      e.preventDefault();
+    }
+  });
 </script>
 
 </body>
