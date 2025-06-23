@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -121,7 +122,6 @@
   <button onclick="showSection('viewer')">عودة إلى واجهة الزبون</button>
 </div>
 
-<!-- واجهة الإدخال -->
 <div id="admin" class="container hidden">
   <h2>إضافة أو تعديل سعر</h2>
   <label>الشركة</label>
@@ -160,7 +160,6 @@
   </table>
 </div>
 
-<!-- واجهة الزبون -->
 <div id="viewer" class="container">
   <h2>قائمة الأسعار</h2>
 
@@ -237,7 +236,7 @@
       .filter(item =>
         (filterCompany === '' || item.company === filterCompany) &&
         (filterPart === '' || item.part === filterPart) &&
-        (item.device.toLowerCase().includes(search))
+        (item.device + item.company + item.part).toLowerCase().includes(search)
       )
       .forEach(item => {
         const row = document.createElement('tr');
@@ -357,7 +356,6 @@
   setInterval(fetchData, 10000);
   window.onload = fetchData;
 
-  // كود منع النسخ وتحديد النص والنقر بزر الفأرة الأيمن
   document.addEventListener('contextmenu', event => event.preventDefault());
   document.addEventListener('selectstart', event => event.preventDefault());
   document.addEventListener('copy', event => event.preventDefault());
