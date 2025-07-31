@@ -623,7 +623,11 @@
   <input type="number" id="price">
 
   <button class="save-btn" onclick="addToSheet()">حفظ</button>
-
+  
+  <hr style="margin-top: 40px; border: 1px solid #eee;">
+  <h2 style="margin-top: 20px;">بحث في السجلات</h2>
+  <label for="adminSearchBox">بحث باسم الجهاز أو الشركة أو القطعة</label>
+  <input type="text" id="adminSearchBox" onkeyup="filterAdminTable()" placeholder="اكتب للبحث في الجدول أدناه...">
   <div id="adminTable_wrapper">
     <table id="adminTable">
       <thead>
@@ -709,7 +713,6 @@
     select.value = current;
   }
 
-  // New function to render data as a list for the viewer
   function renderViewerList() {
     const priceListContainer = document.getElementById('priceList');
     priceListContainer.innerHTML = '';
@@ -730,7 +733,6 @@
         filteredData.forEach(item => {
             const card = document.createElement('div');
             card.className = 'price-card';
-            // تم تغيير هيكلة HTML داخل البطاقة لزيادة التنظيم
             card.innerHTML = `
                 <div class="device-model">${item.device}</div> <div class="detail-item">
                     <span class="label">الشركة:</span> 
@@ -747,15 +749,30 @@
     }
   }
 
+  // === بداية الكود المعدل ===
   function renderAdminTable() {
     const tableBody = document.querySelector('#adminTable tbody');
     tableBody.innerHTML = '';
-    if (allData.length === 0) {
+
+    // الحصول على قيمة البحث من صندوق بحث الأدمن
+    const search = document.getElementById("adminSearchBox")?.value.toLowerCase() || "";
+
+    // تصفية البيانات بناءً على البحث
+    const filteredData = allData.filter(item =>
+        (item.device + item.company + item.part).toLowerCase().includes(search)
+    );
+
+    if (filteredData.length === 0) {
         const noResultsRow = document.createElement('tr');
-        noResultsRow.innerHTML = `<td colspan="5" style="text-align: center; padding: 20px; color: #888;">لا توجد بيانات لإدارتها.</td>`;
+        if (search) {
+             noResultsRow.innerHTML = `<td colspan="5" style="text-align: center; padding: 20px; color: #888;">لا توجد سجلات تطابق بحثك.</td>`;
+        } else {
+             noResultsRow.innerHTML = `<td colspan="5" style="text-align: center; padding: 20px; color: #888;">لا توجد بيانات لإدارتها.</td>`;
+        }
         tableBody.appendChild(noResultsRow);
     } else {
-        allData.forEach(item => {
+        // عرض البيانات المصفاة فقط
+        filteredData.forEach(item => {
             const row = document.createElement('tr');
             row.innerHTML = `
               <td>${item.company}</td>
@@ -771,6 +788,7 @@
         });
     }
   }
+  // === نهاية الكود المعدل ===
 
   function addToSheet() {
     const company = document.getElementById('company').value;
@@ -812,7 +830,7 @@
         document.getElementById('deviceType').value = '';
         document.getElementById('price').value = '';
         editRow = null;
-        fetchData(); // Re-fetch to update both viewer list and admin table
+        fetchData(); 
       })
       .catch(error => {
         console.error('Error saving data:', error);
@@ -843,7 +861,7 @@
       .then(res => res.text())
       .then(msg => {
         alert(msg);
-        fetchData(); // Re-fetch to update both viewer list and admin table
+        fetchData(); 
       })
       .catch(error => {
         console.error('Error deleting data:', error);
@@ -851,9 +869,16 @@
       });
   }
 
-  function filterTable() { // This now calls renderViewerList
+  function filterTable() { 
     renderViewerList();
   }
+  
+  // === بداية الكود المضاف ===
+  // دالة جديدة لتشغيل تصفية جدول المسؤول
+  function filterAdminTable() {
+    renderAdminTable();
+  }
+  // === نهاية الكود المضاف ===
 
   function updatePartFilter() {
     const company = document.getElementById("filterCompany").value;
@@ -864,7 +889,7 @@
       partFilter.classList.add("hidden");
       document.getElementById("filterPart").value = "";
     }
-    renderViewerList(); // Call renderViewerList
+    renderViewerList(); 
   }
 
   function showSection(id) {
@@ -923,3 +948,4 @@
 
 </body>
 </html>
+
