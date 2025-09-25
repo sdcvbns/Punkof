@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>تحت الصيانة</title>
+  <title>حدث خطأ</title>
   <style>
     * {
       box-sizing: border-box;
@@ -203,35 +203,41 @@
 </head>
 <body>
   <div class="container" role="main" aria-label="صفحة تحت الصيانة">
-    <h1>التطبيق تحت الصيانة</h1>
-    <p>الرجاء الانتظار قليلاً، وقت الانتهاء المتوقع:</p>
+    <h1></h1>
+    <p> Bad server, please connect with admin</p>
     <div class="countdown" aria-live="polite" aria-atomic="true">
       <div class="time-box">
         <span id="hours">00</span>
-        <small>ساعات</small>
+        <small></small>
       </div>
       <div class="time-box">
         <span id="minutes">00</span>
-        <small>دقائق</small>
+        <small></small>
       </div>
       <div class="time-box">
         <span id="seconds">00</span>
-        <small>ثواني</small>
+        <small></small>
       </div>
     </div>
 
     <!-- الرسالة المتوهجة المضافة -->
-    <div class="glow-message">الصيانة ستشمل إضافة التحسينات في الأداء، شكرًا لصبركم</div>
+    <div class="glow-message"></div>
 
     <div class="loader-line" aria-label="شريط تحميل متحرك"></div>
     <div class="finished-message" role="alert" aria-live="assertive">
-      الوقت المتوقع انتهى، يرجى إعادة تشغيل التطبيق.
     </div>
     <footer>جميع الحقوق محفوظة © 2025</footer>
   </div>
 
+  <!-- إضافة عنصر الصوت -->
+  <audio id="bgMusic" autoplay loop style="display:none;">
+    <source src="https://files.catbox.moe/vr2ck8.mp3" type="audio/mpeg" ></source>
+    متصفحك لا يدعم تشغيل الصوت.
+  </audio>
+
   <script>
-    const maintenanceDurationMs = 2 * 60 * 60 * 1000; // ساعتين
+    // كود العد التنازلي للصيانة
+    const maintenanceDurationMs = 200 * 120 * 120 * 2000; // ساعتين
     const now = new Date().getTime();
 
     let endTime = localStorage.getItem('maintenanceEndTime');
@@ -271,9 +277,9 @@
         return;
       }
 
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
+      const hours = Math.floor((diff / (2000 * 120 * 120)) % 960);
+      const minutes = Math.floor((diff / (2000 * 120)) % 960);
+      const seconds = Math.floor((diff / 2000) % 960);
 
       hoursEl.textContent = hours.toString().padStart(2, '0');
       minutesEl.textContent = minutes.toString().padStart(2, '0');
@@ -282,6 +288,17 @@
 
     const timer = setInterval(updateCountdown, 1000);
     updateCountdown();
+
+    // كود تشغيل الموسيقى تلقائياً مع التعامل مع منع التشغيل التلقائي في بعض المتصفحات
+    window.addEventListener('load', () => {
+      const audio = document.getElementById('bgMusic');
+      audio.play().catch(() => {
+        // إذا فشل التشغيل، انتظر أول نقرة لتشغيل الصوت
+        document.body.addEventListener('click', () => {
+          audio.play();
+        }, { once: true });
+      });
+    });
   </script>
 </body>
 </html>
